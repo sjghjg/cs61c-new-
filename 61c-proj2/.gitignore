@@ -593,5 +593,3 @@ test-src/
 # Test output files
 output.bin
 *-output.bin
-### 61C Lab ###
-!/*/tests/reference-output/*.out
