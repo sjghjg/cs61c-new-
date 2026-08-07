@@ -1,0 +1,10 @@
+1. 150ns // hold time always no need to count
+2. 
+
+stage 1 * operation: multiplication block + CLK-to-Q time + setup time = 60 + 10 + 10 = 80
+stage 2 + operation: adder + CLK-to-Q time + setup time = 45 + 10 + 10 = 65
+critical path = 80 + 65
+ques 1 answer = 142ns
+
+max clock rate: 1 / spend most longest time for a cycle  (65n < 80n)
+ques 2 answer = 1 / 80n = 12.5MHz
