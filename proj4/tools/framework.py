@@ -25,11 +25,36 @@ def set_tests_dir(path: Path):
     tests_dir = path
 
 
-def run_oracle(a_path: Path, b_path: Path, out_path: Path):
-    if not oracle_path.exists():
-        raise RuntimeError(
-            "Oracle does not exist, please run on the hive machines")
-    subprocess.run([oracle_path, a_path, b_path, out_path])
+def run_oracle(a_path, b_path, ref_path):
+    # 读取 a.bin
+    with open(a_path, 'rb') as f:
+        rows_a = np.fromfile(f, dtype=np.uint32, count=1)[0]
+        cols_a = np.fromfile(f, dtype=np.uint32, count=1)[0]
+        a = np.fromfile(f, dtype=np.int32).reshape((rows_a, cols_a))
+
+    # 读取 b.bin
+    with open(b_path, 'rb') as f:
+        rows_b = np.fromfile(f, dtype=np.uint32, count=1)[0]
+        cols_b = np.fromfile(f, dtype=np.uint32, count=1)[0]
+        b = np.fromfile(f, dtype=np.int32).reshape((rows_b, cols_b))
+
+    # 翻转 B 矩阵（上下 + 左右）
+    b_flipped = np.flip(b)
+
+    out_rows = rows_a - rows_b + 1
+    out_cols = cols_a - cols_b + 1
+    ref = np.zeros((out_rows, out_cols), dtype=np.int32)
+
+    # 2D 卷积计算
+    for r in range(out_rows):
+        for c in range(out_cols):
+            window = a[r : r + rows_b, c : c + cols_b]
+            ref[r, c] = np.sum(window * b_flipped)
+
+    # 写入 ref.bin
+    with open(ref_path, 'wb') as f:
+        np.array([out_rows, out_cols], dtype=np.uint32).tofile(f)
+        ref.astype(np.int32).tofile(f)
 
 
 def randint(lower, upper, **kwargs):
